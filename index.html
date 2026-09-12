@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Emmanuel De Jesús López García">
+  <title>CriptoSystem - Al-Kindi Auto-Decryptor</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Criptosistema Clásico & Analizador Al-Kindi</h1>
+    <p>Cifrado/Descifrado César y Atbash con identificación automática por análisis de frecuencias (Chi-Cuadrado)</p>
+    <p class="author-tag">Emmanuel De Jesús López García — Ingeniería en Sistemas Computacionales, UAA</p>
+  </header>
+
+  <!-- CONFIGURACIÓN DE ALFABETO -->
+  <div class="card">
+    <h2>1. Configuración de Alfabeto / Conjunto de Caracteres</h2>
+    <div class="form-group">
+      <label for="alphabetInput">Alfabeto Base (Defina los caracteres válidos ordenados):</label>
+      <input type="text" id="alphabetInput" value="ABCDEFGHIJKLMNÑOPQRSTUVWXYZabcdefghijklmnñopqrstuvwxyz0123456789 .,;:-_!?">
+      <small class="help-text">
+        El tamaño del alfabeto actual es: <strong id="alphabetLength">0</strong> caracteres.
+      </small>
+    </div>
+  </div>
+
+  <!-- MÓDULO DE CIFRADO -->
+  <div class="card">
+    <h2>2. Módulo de Cifrado (Manual)</h2>
+    <div class="form-group">
+      <label for="encryptInput">Texto Plano / Mensaje a Cifrar:</label>
+      <textarea id="encryptInput" placeholder="Escriba su mensaje aquí..."></textarea>
+    </div>
+    <div class="row">
+      <div class="col form-group">
+        <label for="cipherSelect">Método de Cifrado:</label>
+        <select id="cipherSelect">
+          <option value="cesar">César</option>
+          <option value="atbash">Atbash</option>
+        </select>
+      </div>
+      <div class="col form-group" id="shiftGroup">
+        <label for="shiftInput">Desplazamiento (Módulo k):</label>
+        <input type="number" id="shiftInput" value="3" min="1">
+      </div>
+    </div>
+    <button class="btn" id="encryptBtn">Cifrar Mensaje</button>
+
+    <div class="result-box">
+      <div class="result-title">Resultado Cifrado:</div>
+      <div class="result-text" id="encryptResult">-</div>
+    </div>
+  </div>
+
+  <!-- MÓDULO DE DESCIFRADO AUTOMÁTICO (AL-KINDI) -->
+  <div class="card">
+    <h2>3. Módulo de Descifrado Automático (Método Al-Kindi)</h2>
+    <div class="form-group">
+      <label for="decryptInput">Texto Cifrado:</label>
+      <textarea id="decryptInput" placeholder="Pegue aquí el texto cifrado..."></textarea>
+    </div>
+    <button class="btn" id="autoDecryptBtn">Descifrar Automáticamente (Sin Intervención Humana)</button>
+
+    <div class="result-box">
+      <div class="result-title">Método y Parámetros Identificados:</div>
+      <div class="badge" id="detectedMethod">Esperando análisis...</div>
+
+      <div class="result-title result-title-spacing">Mensaje Descifrado Obtenido:</div>
+      <div class="result-text" id="decryptResult">-</div>
+
+      <div class="result-title result-title-spacing">Puntaje Estadístico (Chi-Cuadrado, menor = mejor ajuste):</div>
+      <div class="result-text score-text" id="decryptScore">-</div>
+    </div>
+    <small class="help-text">
+      Nota: el análisis de frecuencias es más confiable con oraciones de al menos 8-10 palabras.
+      Con textos muy cortos, la muestra estadística puede no ser representativa.
+    </small>
+  </div>
+
+  <footer>
+    <p>Proyecto 1 — Criptografía Clásica | Emmanuel De Jesús López García</p>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
