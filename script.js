@@ -115,9 +115,17 @@ function calculateChiSquared(text) {
     counts[char] = (counts[char] || 0) + 1;
   }
 
+  // Se unen las letras esperadas del español con cualquier otro símbolo que
+  // haya aparecido en el candidato (dígitos, signos de puntuación, etc.).
+  // A los símbolos que NO pertenecen al español se les asigna una frecuencia
+  // esperada casi nula (0.01%): así, si un candidato mal descifrado está
+  // lleno de dígitos o signos sueltos (algo casi imposible en español
+  // natural), esos símbolos SÍ penalizan su puntaje en vez de ser ignorados.
+  const allChars = new Set([...Object.keys(SPANISH_FREQUENCIES), ...Object.keys(counts)]);
+
   let chiSquared = 0;
-  for (let char in SPANISH_FREQUENCIES) {
-    const expectedFreq = SPANISH_FREQUENCIES[char];
+  for (const char of allChars) {
+    const expectedFreq = SPANISH_FREQUENCIES[char] !== undefined ? SPANISH_FREQUENCIES[char] : 0.01;
     const expectedCount = (expectedFreq / 100) * totalChars;
     const observedCount = counts[char] || 0;
 
