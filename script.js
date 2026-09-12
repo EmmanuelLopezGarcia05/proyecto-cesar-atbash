@@ -105,34 +105,45 @@ function executeEncryption() {
 
 // --- MOTOR DE ANÁLISIS ESTADÍSTICO (AL-KINDI) ---
 
+/**
+ * Calcula el puntaje Chi-Cuadrado de un candidato descifrado, comparando SOLO
+ * las letras del español (y el espacio) que contiene contra la frecuencia
+ * esperada del idioma. Los caracteres que no son letras del español (dígitos,
+ * signos de puntuación) se excluyen del cálculo, porque un mensaje real puede
+ * legítimamente contener números (fechas, horas, cantidades) y no deben
+ * penalizarse por eso.
+ *
+ * El puntaje se normaliza dividiendo entre la cantidad de letras evaluadas,
+ * para poder comparar de forma justa candidatos que -tras el cifrado/
+ * descifrado- terminan con distinta cantidad de letras "útiles" para el
+ * análisis (por ejemplo, un texto con muchos números tendrá pocas letras
+ * disponibles sin importar qué desplazamiento se pruebe).
+ *
+ * Si un candidato no tiene letras suficientes (menos de 5), se descarta por
+ * completo devolviendo Infinity: con una muestra tan pequeña, el análisis de
+ * frecuencias de Al-Kindi no es estadísticamente confiable y es preferible no
+ * arriesgar una respuesta falsa.
+ */
 function calculateChiSquared(text) {
   const cleanText = text.toLowerCase();
-  const totalChars = cleanText.length;
-  if (totalChars === 0) return Infinity;
+  const letterChars = [...cleanText].filter(ch => SPANISH_FREQUENCIES[ch] !== undefined);
+  const totalLetters = letterChars.length;
+
+  if (totalLetters < 5) return Infinity;
 
   const counts = {};
-  for (let char of cleanText) {
-    counts[char] = (counts[char] || 0) + 1;
+  for (const ch of letterChars) {
+    counts[ch] = (counts[ch] || 0) + 1;
   }
 
-  // Se unen las letras esperadas del español con cualquier otro símbolo que
-  // haya aparecido en el candidato (dígitos, signos de puntuación, etc.).
-  // A los símbolos que NO pertenecen al español se les asigna una frecuencia
-  // esperada casi nula (0.01%): así, si un candidato mal descifrado está
-  // lleno de dígitos o signos sueltos (algo casi imposible en español
-  // natural), esos símbolos SÍ penalizan su puntaje en vez de ser ignorados.
-  const allChars = new Set([...Object.keys(SPANISH_FREQUENCIES), ...Object.keys(counts)]);
-
   let chiSquared = 0;
-  for (const char of allChars) {
-    const expectedFreq = SPANISH_FREQUENCIES[char] !== undefined ? SPANISH_FREQUENCIES[char] : 0.01;
-    const expectedCount = (expectedFreq / 100) * totalChars;
-    const observedCount = counts[char] || 0;
-
+  for (const ch in SPANISH_FREQUENCIES) {
+    const expectedCount = (SPANISH_FREQUENCIES[ch] / 100) * totalLetters;
+    const observedCount = counts[ch] || 0;
     chiSquared += Math.pow(observedCount - expectedCount, 2) / (expectedCount + 0.0001);
   }
 
-  return chiSquared;
+  return chiSquared / totalLetters;
 }
 
 function executeAutoDecryption() {
@@ -180,6 +191,13 @@ function executeAutoDecryption() {
   // Despliegue automático directo (sin intervención humana: solo se muestra
   // el candidato con menor puntaje Chi-Cuadrado, es decir, el más parecido
   // estadísticamente al español)
+  if (bestCandidate.score === Infinity) {
+    document.getElementById('detectedMethod').innerText = 'Muestra insuficiente para un análisis de frecuencias confiable';
+    document.getElementById('decryptResult').innerText = '-';
+    document.getElementById('decryptScore').innerText = '-';
+    return;
+  }
+
   document.getElementById('detectedMethod').innerText = `Detección Al-Kindi: ${bestCandidate.method}`;
   document.getElementById('decryptResult').innerText = bestCandidate.text;
   document.getElementById('decryptScore').innerText = bestCandidate.score.toFixed(2);
